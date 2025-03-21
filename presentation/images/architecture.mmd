@@ -1,0 +1,23 @@
+graph LR
+    A[Kubernetes Cluster] -->|Metrics| B[ML Prediction Agent]
+    B -->|Predictions| C[Remediation Agent]
+    C -->|Actions| A
+    C -->|Metrics| D[Prometheus]
+    D -->|Visualization| E[Grafana]
+    
+    subgraph Prediction Phase
+    B
+    end
+    
+    subgraph Remediation Phase
+    C
+    end
+    
+    subgraph Monitoring
+    D
+    E
+    end
+    
+    style Prediction Phase fill:#f9f,stroke:#333,stroke-width:2px
+    style Remediation Phase fill:#bbf,stroke:#333,stroke-width:2px
+    style Monitoring fill:#bfb,stroke:#333,stroke-width:2px 

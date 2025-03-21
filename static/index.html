@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kubernetes Remediation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .endpoint {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .response {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            border: 1px solid #e9ecef;
+            font-family: monospace;
+        }
+        button {
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        h1 {
+            color: #212529;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+        }
+        .success {
+            color: #198754;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kubernetes Remediation System</h1>
+    
+    <div class="endpoint">
+        <h2>Health Check</h2>
+        <button onclick="checkHealth()">Check Health</button>
+        <div id="healthResponse" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+        <h2>Test Remediation</h2>
+        <button onclick="testRemediation()">Test Resource Exhaustion</button>
+        <div id="remediationResponse" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+        <h2>Action History</h2>
+        <button onclick="getActions()">Get Actions</button>
+        <div id="actionsResponse" class="response"></div>
+    </div>
+
+    <div class="endpoint">
+        <h2>Effectiveness Metrics</h2>
+        <button onclick="getEffectiveness()">Get Metrics</button>
+        <div id="metricsResponse" class="response"></div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function formatResponse(data) {
+            return JSON.stringify(data, null, 2);
+        }
+
+        function showError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.textContent = `Error: ${error.message}`;
+            element.classList.add('error');
+        }
+
+        function showSuccess(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = formatResponse(data);
+            element.classList.remove('error');
+        }
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                showSuccess('healthResponse', data);
+            } catch (error) {
+                showError('healthResponse', error);
+            }
+        }
+
+        async function testRemediation() {
+            try {
+                const payload = {
+                    issue_type: "resource_exhaustion",
+                    confidence: 0.95,
+                    target: {
+                        namespace: "default",
+                        deployment: "web-app",
+                        replicas: 2
+                    },
+                    details: {
+                        usage_increase: 0.9
+                    }
+                };
+
+                const response = await fetch(`${API_URL}/remediate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                showSuccess('remediationResponse', data);
+            } catch (error) {
+                showError('remediationResponse', error);
+            }
+        }
+
+        async function getActions() {
+            try {
+                const response = await fetch(`${API_URL}/actions`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                showSuccess('actionsResponse', data);
+            } catch (error) {
+                showError('actionsResponse', error);
+            }
+        }
+
+        async function getEffectiveness() {
+            try {
+                const response = await fetch(`${API_URL}/effectiveness`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                showSuccess('metricsResponse', data);
+            } catch (error) {
+                showError('metricsResponse', error);
+            }
+        }
+
+        // Check health on page load
+        window.onload = checkHealth;
+    </script>
+</body>
+</html> 
